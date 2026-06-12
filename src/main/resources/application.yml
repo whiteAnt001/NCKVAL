@@ -17,5 +17,5 @@ spring:
 
 henrik:
   api:
-    key: ${HENRIK_API_KEY}
+    key: HDEV-d506607a-732b-416c-9606-9b920490d7c1
     base-url: https://api.henrikdev.xyz

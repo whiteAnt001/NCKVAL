@@ -51,6 +51,7 @@ jobs:
           script: |
             kill $(lsof -t -i:8080) 2>/dev/null || true
             sleep 3
+            cd /home/ubuntu/nck
             nohup java -jar /home/ubuntu/nck/NCKVAL.jar \
               --henrik.api.key=${{ secrets.HENRIK_API_KEY }} \
               > /home/ubuntu/nck/app.log 2>&1 &
