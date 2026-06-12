@@ -1,0 +1,15 @@
+2026-06-12 15:58:58.838128+09:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "[*]delere from MATCHES"; expected "DELETE, DROP"; SQL statement:
+delere from MATCHES [42001-224]
+2026-06-12 15:59:01.878755+09:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "[*]delere from MATCHES"; expected "DELETE, DROP"; SQL statement:
+delere from MATCHES [42001-224]
+2026-06-12 15:59:07.079575+09:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "[*]delere MATCHES"; expected "DELETE, DROP"; SQL statement:
+delere MATCHES [42001-224]
+2026-06-12 15:59:13.668145+09:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "[*]delere table fromMATCHES"; expected "DELETE, DROP"; SQL statement:
+delere table fromMATCHES [42001-224]
+2026-06-12 15:59:14.449460+09:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "[*]delere table from MATCHES"; expected "DELETE, DROP"; SQL statement:
+delere table from MATCHES [42001-224]

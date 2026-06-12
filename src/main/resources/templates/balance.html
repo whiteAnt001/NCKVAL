@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>NCK 팀밸</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .balance-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 1.5rem;
+        }
+
+        /* 플레이어 선택 패널 */
+        .select-panel {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1.5rem;
+            height: fit-content;
+            position: sticky;
+            top: 1rem;
+        }
+
+        .select-panel .counter {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            margin-bottom: 1rem;
+        }
+
+        .select-panel .counter span {
+            color: var(--red);
+            font-weight: 700;
+        }
+
+        .player-select-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .player-select-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.7rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .player-select-item:hover {
+            border-color: var(--red);
+            background-color: var(--card-hover);
+        }
+
+        .player-select-item.selected {
+            border-color: var(--red);
+            background-color: rgba(255, 70, 85, 0.1);
+        }
+
+        .player-select-item.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .player-select-item img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .player-select-item .info .name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .player-select-item .info .tier {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+            margin-top: 1px;
+        }
+
+        .player-select-item .check {
+            margin-left: auto;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+        }
+
+        .player-select-item.selected .check {
+            background-color: var(--red);
+            border-color: var(--red);
+        }
+
+        /* 결과 패널 */
+        .result-panel .empty {
+            text-align: center;
+            padding: 4rem 0;
+            color: var(--text-sub);
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .team-card {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .team-header {
+            padding: 0.8rem 1.2rem;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .team-header.red {
+            background-color: rgba(255, 70, 85, 0.15);
+            border-bottom: 2px solid var(--red);
+            color: var(--red);
+        }
+
+        .team-header.blue {
+            background-color: rgba(70, 130, 255, 0.15);
+            border-bottom: 2px solid #4682ff;
+            color: #4682ff;
+        }
+
+        .team-body {
+            padding: 1rem;
+        }
+
+        .team-player {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .team-player:last-child {
+            border-bottom: none;
+        }
+
+        .team-player img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .team-player .name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .team-player .tier {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+        }
+
+        .team-player .score {
+            margin-left: auto;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--red);
+        }
+
+        .team-footer {
+            padding: 0.8rem 1.2rem;
+            background-color: var(--darker);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .team-footer .total-label {
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.75rem;
+        }
+
+        .team-footer .total-score {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        /* 점수 차이 배너 */
+        .diff-banner {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-sub);
+        }
+
+        .diff-banner .diff-value {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .balance-btn-wrap {
+            margin-top: 1.2rem;
+        }
+
+        .balance-btn-wrap .btn {
+            width: 100%;
+            text-align: center;
+            padding: 0.8rem;
+        }
+
+        .balance-btn-wrap .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a class="nav-logo" href="/">VAL CUSTOM</a>
+    <div class="nav-links">
+        <a href="/">플레이어</a>
+        <a href="/balance">팀 밸런싱</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <span class="section-title" style="margin-bottom:1.5rem; display:inline-block;">Team Balance</span>
+
+    <div class="balance-layout">
+
+        <!-- 플레이어 선택 패널 -->
+        <div class="select-panel">
+            <div class="section-title" style="font-size:1rem;">플레이어 선택</div>
+            <div class="counter">선택됨: <span id="selectedCount">0</span> / 10</div>
+            <div class="player-select-list" id="playerList">
+                <div th:each="player : ${players}"
+                     class="player-select-item"
+                     th:data-id="${player.id}"
+                     th:data-name="${player.name}"
+                     th:data-tier="${player.tier}"
+                     th:data-card="${player.cardSmall}"
+                     onclick="toggleSelect(this)">
+                    <img th:src="${player.cardSmall}"
+                         onerror="this.src='/img/default-avatar.png'"
+                         alt="avatar">
+                    <div class="info">
+                        <div class="name" th:text="${player.name}"></div>
+                        <div class="tier" th:text="${player.tier}"></div>
+                    </div>
+                    <div class="check">✓</div>
+                </div>
+                <div th:if="${#lists.isEmpty(players)}"
+                     style="text-align:center; color:var(--text-sub); padding:2rem; font-size:0.9rem;">
+                    등록된 플레이어가 없습니다
+                </div>
+            </div>
+            <div class="balance-btn-wrap">
+                <button class="btn btn-primary"
+                        id="balanceBtn"
+                        onclick="runBalance()"
+                        disabled>팀 밸런싱 시작</button>
+            </div>
+        </div>
+
+        <!-- 결과 패널 -->
+        <div class="result-panel">
+            <div class="section-title" style="font-size:1rem;">결과</div>
+
+            <!-- 초기 상태 -->
+            <div class="empty" id="emptyState">
+                <p>10명을 선택하고 밸런싱을 시작하세요.</p>
+            </div>
+
+            <!-- 결과 -->
+            <div id="resultWrap" style="display:none;">
+                <div class="team-grid">
+                    <!-- 팀 A -->
+                    <div class="team-card">
+                        <div class="team-header red">🔴 Team A</div>
+                        <div class="team-body" id="teamA"></div>
+                        <div class="team-footer">
+                            <span class="total-label">Total Score</span>
+                            <span class="total-score" id="scoreA"></span>
+                        </div>
+                    </div>
+                    <!-- 팀 B -->
+                    <div class="team-card">
+                        <div class="team-header blue">🔵 Team B</div>
+                        <div class="team-body" id="teamB"></div>
+                        <div class="team-footer">
+                            <span class="total-label">Total Score</span>
+                            <span class="total-score" id="scoreB"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="diff-banner">
+                    <span>점수 차이</span>
+                    <span class="diff-value" id="scoreDiff"></span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+    const selectedIds = [];
+
+    function toggleSelect(el) {
+        if (selectedIds.length >= 10 && !el.classList.contains('selected')) return;
+
+        const id = el.dataset.id;
+        const idx = selectedIds.indexOf(id);
+
+        if (idx === -1) {
+            selectedIds.push(id);
+            el.classList.add('selected');
+        } else {
+            selectedIds.splice(idx, 1);
+            el.classList.remove('selected');
+        }
+
+        document.getElementById('selectedCount').textContent = selectedIds.length;
+        document.getElementById('balanceBtn').disabled = selectedIds.length !== 10;
+
+        // 10명 다 찼으면 나머지 비활성화
+        document.querySelectorAll('.player-select-item').forEach(item => {
+            if (!item.classList.contains('selected')) {
+                item.classList.toggle('disabled', selectedIds.length >= 10);
+            }
+        });
+    }
+
+    async function runBalance() {
+        showToast('밸런싱 계산 중...');
+        try {
+            const res = await fetch('/api/balance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ playerIds: selectedIds.map(Number) })
+            });
+
+            if (!res.ok) {
+                showToast('밸런싱 실패');
+                return;
+            }
+
+            const data = await res.json();
+            renderResult(data);
+        } catch (e) {
+            showToast('서버 오류가 발생했습니다.');
+        }
+    }
+
+    function renderResult(data) {
+        document.getElementById('emptyState').style.display = 'none';
+        document.getElementById('resultWrap').style.display = 'block';
+
+        document.getElementById('teamA').innerHTML = data.teamA.map(renderPlayer).join('');
+        document.getElementById('teamB').innerHTML = data.teamB.map(renderPlayer).join('');
+        document.getElementById('scoreA').textContent = data.teamAScore;
+        document.getElementById('scoreB').textContent = data.teamBScore;
+        document.getElementById('scoreDiff').textContent = data.scoreDiff;
+
+        showToast('밸런싱 완료!');
+    }
+
+    function renderPlayer(p) {
+        return `
+            <div class="team-player">
+                <img src="${p.cardSmall || '/img/default-avatar.png'}"
+                     onerror="this.src='/img/default-avatar.png'" alt="avatar">
+                <div>
+                    <div class="name">${p.name}</div>
+                    <div class="tier">${p.tier} · 승률 ${p.winRate}%</div>
+                </div>
+                <div class="score">${p.score}</div>
+            </div>
+        `;
+    }
+
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+</script>
+
+</body>
+</html>

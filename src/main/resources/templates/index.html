@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>NCK 발로란트</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .player-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .player-card {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: var(--text);
+        }
+
+        .player-card:hover {
+            border-color: var(--red);
+            background-color: var(--card-hover);
+            transform: translateY(-2px);
+        }
+
+        .player-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--border);
+        }
+
+        .player-info .name {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .player-info .tag {
+            color: var(--text-sub);
+            font-size: 0.8rem;
+            margin-top: 2px;
+        }
+
+        .player-info .tier {
+            font-size: 0.75rem;
+            color: var(--red);
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        /* 등록 모달 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-top: 3px solid var(--red);
+            border-radius: 4px;
+            padding: 2rem;
+            width: 400px;
+        }
+
+        .modal h2 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-sub);
+            margin-bottom: 0.4rem;
+        }
+
+        .form-group input {
+            width: 100%;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 1.5rem;
+            justify-content: flex-end;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 0;
+            color: var(--text-sub);
+        }
+
+        .empty-state p {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        #toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: var(--card);
+            border-left: 3px solid var(--red);
+            padding: 1rem 1.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 999;
+        }
+
+        #toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a class="nav-logo" href="/">VAL CUSTOM</a>
+    <div class="nav-links">
+        <a href="/">플레이어</a>
+        <a href="/balance">팀 밸런싱</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <span class="section-title">Players</span>
+        <button class="btn btn-primary" onclick="openModal()">+ 플레이어 등록</button>
+    </div>
+
+    <!-- 플레이어 없을 때 -->
+    <div class="empty-state" th:if="${#lists.isEmpty(players)}">
+        <span class="section-title" style="display:block; text-align:center;">등록된 플레이어가 없습니다</span>
+        <p>플레이어를 등록해서 내전 통계를 시작하세요.</p>
+    </div>
+
+    <!-- 플레이어 그리드 -->
+    <div class="player-grid" th:unless="${#lists.isEmpty(players)}">
+        <a class="player-card"
+           th:each="player : ${players}"
+           th:href="@{/stats/{name}/{tag}(name=${player.name}, tag=${player.tag})}">
+            <img class="player-avatar"
+                 th:src="${player.cardSmall}"
+                 onerror="this.src='/img/default-avatar.png'"
+                 alt="avatar">
+            <div class="player-info">
+                <div class="name" th:text="${player.name}"></div>
+                <div class="tag" th:text="'#' + ${player.tag}"></div>
+                <div class="tier" th:text="${player.tier}"></div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- 등록 모달 -->
+<div class="modal-overlay" id="modal">
+    <div class="modal">
+        <h2>플레이어 등록</h2>
+        <div class="form-group">
+            <label>닉네임</label>
+            <input type="text" id="inputName" placeholder="닉네임">
+        </div>
+        <div class="form-group">
+            <label>태그</label>
+            <input type="text" id="inputTag" placeholder="1234 (#없이 입력)">
+        </div>
+        <div class="form-actions">
+            <button class="btn btn-secondary" onclick="closeModal()">취소</button>
+            <button class="btn btn-primary" onclick="registerPlayer()">등록</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+    function openModal() {
+        document.getElementById('modal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('modal').classList.remove('active');
+        document.getElementById('inputName').value = '';
+        document.getElementById('inputTag').value = '';
+    }
+
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    async function registerPlayer() {
+        const name = document.getElementById('inputName').value.trim();
+        const tag = document.getElementById('inputTag').value.trim();
+
+        if (!name || !tag) {
+            showToast('닉네임과 태그를 입력해주세요.');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/players', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, tag })
+            });
+
+            if (res.ok) {
+                showToast('등록 완료!');
+                closeModal();
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                const err = await res.json();
+                showToast(err.message || '등록 실패');
+            }
+        } catch (e) {
+            showToast('서버 오류가 발생했습니다.');
+        }
+    }
+
+    // 모달 외부 클릭시 닫기
+    document.getElementById('modal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+</script>
+
+</body>
+</html>

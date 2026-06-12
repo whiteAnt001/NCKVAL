@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>NCK 전적</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 2rem;
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-top: 3px solid var(--red);
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid var(--red);
+            object-fit: cover;
+        }
+
+        .profile-name {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .profile-tag {
+            color: var(--text-sub);
+            font-size: 0.9rem;
+            margin-top: 2px;
+        }
+
+        .profile-tier {
+            color: var(--red);
+            font-weight: 700;
+            font-size: 1rem;
+            margin-top: 6px;
+        }
+
+        .profile-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        /* 스탯 요약 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1.2rem;
+            text-align: center;
+        }
+
+        .stat-card .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-sub);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .value {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .stat-card .value.highlight {
+            color: var(--red);
+        }
+
+        .stat-card .sub {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            margin-top: 4px;
+        }
+
+        /* 승률 바 */
+        .winrate-bar {
+            height: 6px;
+            background-color: var(--border);
+            border-radius: 3px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .winrate-fill {
+            height: 100%;
+            background-color: var(--red);
+            border-radius: 3px;
+            transition: width 1s ease;
+        }
+
+        /* 에이전트 테이블 */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .agent-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: var(--border);
+        }
+
+        .agent-name {
+            font-weight: 600;
+        }
+
+        .picks-bar {
+            width: 80px;
+            height: 4px;
+            background-color: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 8px;
+        }
+
+        .picks-fill {
+            height: 100%;
+            background-color: var(--red);
+            border-radius: 2px;
+        }
+
+        /* 최근 전적 */
+        .match-row td:first-child {
+            font-weight: 700;
+        }
+
+        .result-win {
+            color: var(--win);
+            font-weight: 700;
+        }
+
+        .result-lose {
+            color: var(--lose);
+            font-weight: 700;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .content-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a class="nav-logo" href="/">VAL CUSTOM</a>
+    <div class="nav-links">
+        <a href="/">플레이어</a>
+        <a href="/balance">팀 밸런싱</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <!-- 프로필 헤더 -->
+    <div class="profile-header">
+        <img class="profile-avatar"
+             th:src="${stats.cardSmall}"
+             onerror="this.src='/img/default-avatar.png'"
+             alt="avatar">
+        <div>
+            <div class="profile-name" th:text="${stats.name}"></div>
+            <div class="profile-tag" th:text="'#' + ${stats.tag}"></div>
+            <div class="profile-tier" th:text="${stats.tier}"></div>
+        </div>
+        <div class="profile-actions">
+            <button class="btn btn-secondary"
+                    th:data-name="${stats.name}"
+                    th:data-tag="${stats.tag}"
+                    onclick="syncMatches(this.dataset.name, this.dataset.tag)">
+                🔄 동기화
+            </button>
+            <a class="btn btn-secondary" href="/">← 목록</a>
+        </div>
+    </div>
+
+    <!-- 스탯 요약 -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="label">전체 게임</div>
+            <div class="value" th:text="${stats.totalGames}"></div>
+            <div class="sub" th:text="${stats.wins} + 'W ' + ${stats.losses} + 'L'"></div>
+        </div>
+        <div class="stat-card">
+            <div class="label">승률</div>
+            <div class="value highlight" th:text="${stats.winRate} + '%'"></div>
+            <div class="winrate-bar">
+                <div class="winrate-fill" th:style="'width:' + ${stats.winRate} + '%'"></div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="label">KDA</div>
+            <div class="value" th:text="${stats.kda}"></div>
+            <div class="sub"
+                 th:text="${stats.totalKills} + ' / ' + ${stats.totalDeaths} + ' / ' + ${stats.totalAssists}">
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="label">평균 킬</div>
+            <div class="value"
+                 th:text="${stats.totalGames > 0} ? ${#numbers.formatDecimal(stats.totalKills / stats.totalGames, 1, 1)} : '0'">
+            </div>
+            <div class="sub">per game</div>
+        </div>
+    </div>
+
+    <!-- 에이전트 통계 -->
+    <div class="content-grid">
+        <div class="card">
+            <div class="section-title">Agent Stats</div>
+            <table>
+                <thead>
+                <tr>
+                    <th>에이전트</th>
+                    <th>픽</th>
+                    <th>승률</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="agent : ${stats.agentStats}">
+                    <td>
+                        <span class="agent-name" th:text="${agent.agent}"></span>
+                    </td>
+                    <td>
+                        <span th:text="${agent.picks}"></span>
+                        <span class="picks-bar">
+                                <span class="picks-fill"
+                                      th:style="'width:' + ${agent.winRate} + '%'"></span>
+                            </span>
+                    </td>
+                    <td>
+                            <span th:classappend="${agent.winRate >= 50} ? 'win' : 'lose'"
+                                  th:text="${agent.winRate} + '%'"></span>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(stats.agentStats)}">
+                    <td colspan="3" style="text-align:center; color:var(--text-sub); padding:2rem;">
+                        데이터 없음
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 전적 요약 -->
+        <div class="card">
+            <div class="section-title">Summary</div>
+            <table>
+                <tbody>
+                <tr>
+                    <td style="color:var(--text-sub);">총 킬</td>
+                    <td th:text="${stats.totalKills}"></td>
+                </tr>
+                <tr>
+                    <td style="color:var(--text-sub);">총 데스</td>
+                    <td th:text="${stats.totalDeaths}"></td>
+                </tr>
+                <tr>
+                    <td style="color:var(--text-sub);">총 어시스트</td>
+                    <td th:text="${stats.totalAssists}"></td>
+                </tr>
+                <tr>
+                    <td style="color:var(--text-sub);">KDA</td>
+                    <td th:text="${stats.kda}"></td>
+                </tr>
+                <tr>
+                    <td style="color:var(--text-sub);">승</td>
+                    <td class="win" th:text="${stats.wins}"></td>
+                </tr>
+                <tr>
+                    <td style="color:var(--text-sub);">패</td>
+                    <td class="lose" th:text="${stats.losses}"></td>
+                </tr>
+                <tr>
+                    <td style="color:var(--text-sub);">승률</td>
+                    <td th:classappend="${stats.winRate >= 50} ? 'win' : 'lose'"
+                        th:text="${stats.winRate} + '%'"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+    async function syncMatches(name, tag) {
+        showToast('동기화 중...');
+        try {
+            const res = await fetch(`/api/stats/sync/${name}/${tag}`, {
+                method: 'POST'
+            });
+            if (res.ok) {
+                const msg = await res.text();
+                showToast(msg);
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast('동기화 실패');
+            }
+        } catch (e) {
+            showToast('서버 오류가 발생했습니다.');
+        }
+    }
+
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,181 @@
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --red: #ff4655;
+    --dark: #0f1923;
+    --darker: #0a1117;
+    --card: #1f2731;
+    --card-hover: #283441;
+    --border: #2a3441;
+    --text: #ece8e1;
+    --text-sub: #7f8c99;
+    --win: #4caf50;
+    --lose: #ff4655;
+}
+
+body {
+    background-color: var(--dark);
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* 네비게이션 */
+nav {
+    background-color: var(--darker);
+    border-bottom: 2px solid var(--red);
+    padding: 0 2rem;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.nav-logo {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--red);
+    letter-spacing: 2px;
+    text-decoration: none;
+}
+
+.nav-links a {
+    color: var(--text-sub);
+    text-decoration: none;
+    margin-left: 2rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: color 0.2s;
+}
+
+.nav-links a:hover {
+    color: var(--red);
+}
+
+/* 컨테이너 */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* 카드 */
+.card {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.5rem;
+}
+
+/* 버튼 */
+.btn {
+    padding: 0.6rem 1.4rem;
+    border: none;
+    border-radius: 3px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary {
+    background-color: var(--red);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #e03344;
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+    border-color: var(--red);
+    color: var(--red);
+}
+
+/* 섹션 타이틀 */
+.section-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--red);
+    display: inline-block;
+}
+
+/* 배지 (티어) */
+.badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background-color: var(--border);
+    color: var(--text-sub);
+}
+
+/* 승/패 */
+.win { color: var(--win); font-weight: 700; }
+.lose { color: var(--lose); font-weight: 700; }
+
+/* 입력창 */
+input {
+    background-color: var(--darker);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text);
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+input:focus {
+    border-color: var(--red);
+}
+
+/* 테이블 */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-sub);
+    border-bottom: 1px solid var(--border);
+}
+
+td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+}
+
+tr:hover td {
+    background-color: var(--card-hover);
+}
