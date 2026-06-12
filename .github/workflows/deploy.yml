@@ -49,10 +49,9 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            pkill -f NCKVAL.jar || true
+            kill $(lsof -t -i:8080) 2>/dev/null || true
             sleep 3
             nohup java -jar /home/ubuntu/nck/NCKVAL.jar \
               --henrik.api.key=${{ secrets.HENRIK_API_KEY }} \
               > /home/ubuntu/nck/app.log 2>&1 &
-            echo "App started"
-            exit 0
+            disown
