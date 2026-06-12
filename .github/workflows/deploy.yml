@@ -52,7 +52,7 @@ jobs:
             kill $(lsof -t -i:8080) 2>/dev/null || true
             sleep 3
             cd /home/ubuntu/nck
-            nohup java -jar /home/ubuntu/nck/NCKVAL.jar \
+            nohup java -jar /home/ubuntu/nck/NCK_VAL_Trakker-0.0.1-SNAPSHOT.jar \
               --henrik.api.key=${{ secrets.HENRIK_API_KEY }} \
               > /home/ubuntu/nck/app.log 2>&1 &
             disown
