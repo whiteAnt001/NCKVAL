@@ -38,8 +38,9 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "build/libs/NCKVAL.jar"
+          source: "build/libs/*.jar"
           target: "/home/ubuntu/nck/"
+          strip_components: 2
 
       - name: Run app on EC2
         uses: appleboy/ssh-action@master
@@ -50,6 +51,6 @@ jobs:
           script: |
             pkill -f NCKVAL.jar || true
             sleep 2
-            nohup java -jar /home/ubuntu/nck/build/libs/NCKVAL.jar \
+            nohup java -jar /home/ubuntu/nck/NCKVAL.jar \
               --henrik.api.key=${{ secrets.HENRIK_API_KEY }} \
               > /home/ubuntu/nck/app.log 2>&1 &
