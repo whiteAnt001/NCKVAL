@@ -28,45 +28,45 @@ public class MatchService {
 
         JsonNode matches = henrikApiClient.getMatchHistory(player.getRegion(), name, tag);
 
-        if (matches == null || !matches.isArray()) {
-            return 0;
-        }
+        if (matches == null || !matches.isArray()) return 0;
 
         int saved = 0;
 
         for (JsonNode matchNode : matches) {
             String matchId = matchNode.path("metadata").path("matchid").asText();
-        
-                
-            // 이미 저장된 매치면 스킵
-            if (matchRepository.existsByMatchId(matchId)) {
-                continue;
-            }
 
             String map = matchNode.path("metadata").path("map").asText();
             int roundsPlayed = matchNode.path("metadata").path("rounds_played").asInt();
-            
-            // 승리팀 ㅜㅊ출
+
             JsonNode teams = matchNode.path("teams");
             final String finalWinningTeam;
             if (teams.path("red").path("has_won").asBoolean()) finalWinningTeam = "Red";
             else if (teams.path("blue").path("has_won").asBoolean()) finalWinningTeam = "Blue";
             else finalWinningTeam = "Unknown";
 
-            Match match = Match.builder()
-                    .matchId(matchId)
-                    .map(map)
-                    .winningTeam(finalWinningTeam)
-                    .roundsPlayed(roundsPlayed)
-                    .build();
+            // 매치가 없으면 새로 저장, 있으면 기존 매치 가져오기
+            final Match match;
+            if (!matchRepository.existsByMatchId(matchId)) {
+                Match newMatch = Match.builder()
+                        .matchId(matchId)
+                        .map(map)
+                        .winningTeam(finalWinningTeam)
+                        .roundsPlayed(roundsPlayed)
+                        .build();
+                match = matchRepository.save(newMatch);
+                saved++;
+            } else {
+                match = matchRepository.findByMatchId(matchId).get();
+            }
 
-            matchRepository.save(match);
-
-            // 참여 플레이어 저장
+            // 플레이어 저장은 항상 실행 (나중에 등록된 플레이어도 반영)
             JsonNode players = matchNode.path("players").path("all_players");
             for (JsonNode p : players) {
                 String puuid = p.path("puuid").asText();
                 playerRepository.findByPuuid(puuid).ifPresent(registeredPlayer -> {
+                    // 이미 저장된 match_player면 스킵
+                    if (matchPlayerRepository.existsByMatchAndPlayer(match, registeredPlayer)) return;
+
                     String team = p.path("team").asText();
                     String agent = p.path("character").asText();
                     int kills = p.path("stats").path("kills").asInt();
@@ -90,7 +90,6 @@ public class MatchService {
                     matchPlayerRepository.save(matchPlayer);
                 });
             }
-            saved++;
         }
         return saved;
     }
