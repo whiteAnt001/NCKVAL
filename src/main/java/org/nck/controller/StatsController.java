@@ -29,4 +29,11 @@ public class StatsController {
                                                      @PathVariable String tag) {
         return ResponseEntity.ok(statsService.getStats(name, tag));
     }
+
+    // 전체 플레이어 동기화
+    @PostMapping("/sync/all")
+    public ResponseEntity<String> syncAll() {
+        int saved = matchService.syncAllMatches();
+        return ResponseEntity.ok(saved + "개 매치 동기화 완료");
+    }
 }

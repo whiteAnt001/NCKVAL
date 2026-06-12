@@ -58,7 +58,6 @@
             font-weight: 600;
         }
 
-        /* 등록 모달 */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -157,16 +156,17 @@
 
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
         <span class="section-title">Players</span>
-        <button class="btn btn-primary" onclick="openModal()">+ 플레이어 등록</button>
+        <div style="display:flex; gap:0.8rem;">
+            <button class="btn btn-secondary" onclick="syncAll()">🔄 전체 동기화</button>
+            <button class="btn btn-primary" onclick="openModal()">+ 플레이어 등록</button>
+        </div>
     </div>
 
-    <!-- 플레이어 없을 때 -->
     <div class="empty-state" th:if="${#lists.isEmpty(players)}">
         <span class="section-title" style="display:block; text-align:center;">등록된 플레이어가 없습니다</span>
         <p>플레이어를 등록해서 내전 통계를 시작하세요.</p>
     </div>
 
-    <!-- 플레이어 그리드 -->
     <div class="player-grid" th:unless="${#lists.isEmpty(players)}">
         <a class="player-card"
            th:each="player : ${players}"
@@ -184,7 +184,6 @@
     </div>
 </div>
 
-<!-- 등록 모달 -->
 <div class="modal-overlay" id="modal">
     <div class="modal">
         <h2>플레이어 등록</h2>
@@ -223,6 +222,22 @@
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
+    async function syncAll() {
+        showToast('전체 동기화 중... 잠시 기다려주세요.');
+        try {
+            const res = await fetch('/api/stats/sync/all', { method: 'POST' });
+            if (res.ok) {
+                const msg = await res.text();
+                showToast(msg);
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast('동기화 실패');
+            }
+        } catch (e) {
+            showToast('서버 오류가 발생했습니다.');
+        }
+    }
+
     async function registerPlayer() {
         const name = document.getElementById('inputName').value.trim();
         const tag = document.getElementById('inputTag').value.trim();
@@ -252,7 +267,6 @@
         }
     }
 
-    // 모달 외부 클릭시 닫기
     document.getElementById('modal').addEventListener('click', function(e) {
         if (e.target === this) closeModal();
     });

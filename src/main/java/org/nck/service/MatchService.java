@@ -12,6 +12,8 @@ import org.nck.repository.PlayerRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -20,6 +22,25 @@ public class MatchService {
     private final MatchPlayerRepository matchPlayerRepository;
     private final PlayerRepository playerRepository;
     private final HenrikApiClient henrikApiClient;
+
+    public int syncAllMatches() {
+        List<Player> players = playerRepository.findAll();
+
+        // match_players 전체 삭제 후 재저장
+        matchPlayerRepository.deleteAll();
+        matchRepository.deleteAll();
+
+        int saved = 0;
+        for (Player player : players) {
+            try {
+                saved += syncMatches(player.getName(), player.getTag());
+                Thread.sleep(1000); // Rate Limit 방지
+            } catch (Exception e) {
+                System.out.println("동기화 실패: " + player.getName() + " - " + e.getMessage());
+            }
+        }
+        return saved;
+    }
 
     public int syncMatches(String name, String tag) {
 
