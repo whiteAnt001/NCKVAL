@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:h2:file:./data/valorant_custom
+    url: jdbc:h2:file:/home/ubuntu/nck/data/valorant_custom
     driver-class-name: org.h2.Driver
     username: sa
     password:
