@@ -25,4 +25,6 @@ public class StatsResponseDto {
 
     private List<AgentStatsDto> agentStats;
 
+    private List<MatchHistoryDto> recentMatches;
+
 }

@@ -46,8 +46,8 @@ public class BalanceService {
         }
 
         // 티어점수
-        double tierScore = player.getTierRank() * 0.6;
-        double winRateScore = winRate * 0.4;
+        double tierScore = player.getTierRank() * 0.8;
+        double winRateScore = winRate * 0.2;
         double totalScore = tierScore + winRateScore;
 
         return PlayerScoreDto.builder()

@@ -41,4 +41,18 @@ public class PlayerViewController {
         model.addAttribute("players", playerService.getAllPlayers());
         return "balance";
     }
+
+    // 매치 히스토리 페이지
+    @GetMapping("/history")
+    public String historyPage(Model model) {
+        model.addAttribute("matches", statsService.getMatchHistory());
+        return "history";
+    }
+
+    // 매치 상세
+    @GetMapping("/match/{matchId}")
+    public String matchDetail(@PathVariable String matchId, Model model) {
+        model.addAttribute("match", statsService.getMatchDetail(matchId));
+        return "match-detail";
+    }
 }

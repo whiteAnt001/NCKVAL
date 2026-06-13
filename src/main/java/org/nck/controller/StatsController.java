@@ -1,12 +1,16 @@
 package org.nck.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.nck.dto.MatchDetailDto;
+import org.nck.dto.MatchHistoryDto;
 import org.nck.dto.StatsResponseDto;
 import org.nck.entity.Match;
 import org.nck.service.MatchService;
 import org.nck.service.StatsService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -35,5 +39,17 @@ public class StatsController {
     public ResponseEntity<String> syncAll() {
         int saved = matchService.syncAllMatches();
         return ResponseEntity.ok(saved + "개 매치 동기화 완료");
+    }
+
+    // 매치 히스토리 전체 조회
+    @GetMapping("/history")
+    public ResponseEntity<List<MatchHistoryDto>> getMatchHistory() {
+        return ResponseEntity.ok(statsService.getMatchHistory());
+    }
+
+    // 매치 상세내용
+    @GetMapping("/matches/{matchId}")
+    public ResponseEntity<MatchDetailDto> getMatchDetail(@PathVariable String matchId) {
+        return ResponseEntity.ok(statsService.getMatchDetail(matchId));
     }
 }

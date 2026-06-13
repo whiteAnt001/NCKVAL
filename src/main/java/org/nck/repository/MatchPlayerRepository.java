@@ -13,4 +13,10 @@ public interface MatchPlayerRepository extends JpaRepository<MatchPlayer, Long> 
     int countByPlayer(Player player);
     int countByPlayerAndIsWin(Player player, boolean isWin);
     boolean existsByMatchAndPlayer(Match match, Player player);
+
+    // 특정 플레이어의 매치 기록 최근순
+    List<MatchPlayer> findByPlayerOrderByMatchPlayedAtDesc(Player player);
+
+    // 특정 매치에 참여한 플레이어 목록
+    List<MatchPlayer> findByMatch(Match match);
 }

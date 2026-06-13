@@ -44,17 +44,19 @@ public class HenrikApiClient {
 
         JsonNode data = response.getBody().get("data");
 
-        if (data != null && data.isArray()) {
-            System.out.println("=== 총 매치 수: " + data.size() + " ===");
-            for (int i = 0; i < data.size(); i++) {
-                String modeId = data.get(i).path("metadata").path("mode_id").asText();
-                String matchId = data.get(i).path("metadata").path("matchid").asText();
-                System.out.println("[" + i + "] mode_id: " + modeId + " | matchId: " + matchId);
+        if (data == null || !data.isArray()) return data;
+
+        com.fasterxml.jackson.databind.node.ArrayNode result =
+                com.fasterxml.jackson.databind.node.JsonNodeFactory.instance.arrayNode();
+
+        for (JsonNode match : data) {
+            String queue = match.path("metadata").path("queue").asText();
+            if ("Standard".equals(queue)) {
+                result.add(match);
             }
         }
 
-        if (data == null || !data.isArray()) return data;
-        return data;
+        return result;
     }
 
     // MMR (티어) 조회

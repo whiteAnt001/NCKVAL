@@ -28,6 +28,5 @@ public class Match {
     private String winningTeam; // "Red" or "Blue"
     private int roundsPlayed;
 
-    @CreationTimestamp
     private LocalDateTime playedAt;
 }

@@ -51,7 +51,6 @@
             gap: 0.8rem;
         }
 
-        /* 스탯 요약 */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -81,9 +80,7 @@
             font-weight: 700;
         }
 
-        .stat-card .value.highlight {
-            color: var(--red);
-        }
+        .stat-card .value.highlight { color: var(--red); }
 
         .stat-card .sub {
             font-size: 0.8rem;
@@ -91,7 +88,6 @@
             margin-top: 4px;
         }
 
-        /* 승률 바 */
         .winrate-bar {
             height: 6px;
             background-color: var(--border);
@@ -107,24 +103,13 @@
             transition: width 1s ease;
         }
 
-        /* 에이전트 테이블 */
         .content-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
         }
 
-        .agent-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            object-fit: cover;
-            background-color: var(--border);
-        }
-
-        .agent-name {
-            font-weight: 600;
-        }
+        .agent-name { font-weight: 600; }
 
         .picks-bar {
             width: 80px;
@@ -143,20 +128,71 @@
             border-radius: 2px;
         }
 
-        /* 최근 전적 */
-        .match-row td:first-child {
-            font-weight: 700;
+        /* 동기화 오버레이 */
+        .sync-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
         }
 
-        .result-win {
-            color: var(--win);
-            font-weight: 700;
+        .sync-overlay.active {
+            display: flex;
         }
 
-        .result-lose {
-            color: var(--lose);
-            font-weight: 700;
+        .sync-box {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-top: 3px solid var(--red);
+            border-radius: 4px;
+            padding: 2.5rem 4rem;
+            text-align: center;
         }
+
+        .sync-box .sync-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+        }
+
+        .sync-box .sync-sub {
+            color: var(--text-sub);
+            font-size: 0.9rem;
+        }
+
+        .sync-dots::after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%   { content: ''; }
+            25%  { content: '.'; }
+            50%  { content: '..'; }
+            75%  { content: '...'; }
+            100% { content: ''; }
+        }
+
+        #toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: var(--card);
+            border-left: 3px solid var(--red);
+            padding: 1rem 1.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 999;
+        }
+
+        #toast.show { opacity: 1; }
 
         @media (max-width: 768px) {
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
@@ -170,13 +206,13 @@
     <a class="nav-logo" href="/">VAL CUSTOM</a>
     <div class="nav-links">
         <a href="/">플레이어</a>
+        <a href="/history">매치 기록</a>
         <a href="/balance">팀 밸런싱</a>
     </div>
 </nav>
 
 <div class="container">
 
-    <!-- 프로필 헤더 -->
     <div class="profile-header">
         <img class="profile-avatar"
              th:src="${stats.cardSmall}"
@@ -198,7 +234,6 @@
         </div>
     </div>
 
-    <!-- 스탯 요약 -->
     <div class="stats-grid">
         <div class="stat-card">
             <div class="label">전체 게임</div>
@@ -228,7 +263,6 @@
         </div>
     </div>
 
-    <!-- 에이전트 통계 -->
     <div class="content-grid">
         <div class="card">
             <div class="section-title">Agent Stats</div>
@@ -242,31 +276,25 @@
                 </thead>
                 <tbody>
                 <tr th:each="agent : ${stats.agentStats}">
-                    <td>
-                        <span class="agent-name" th:text="${agent.agent}"></span>
-                    </td>
+                    <td><span class="agent-name" th:text="${agent.agent}"></span></td>
                     <td>
                         <span th:text="${agent.picks}"></span>
                         <span class="picks-bar">
-                                <span class="picks-fill"
-                                      th:style="'width:' + ${agent.winRate} + '%'"></span>
-                            </span>
+                            <span class="picks-fill" th:style="'width:' + ${agent.winRate} + '%'"></span>
+                        </span>
                     </td>
                     <td>
-                            <span th:classappend="${agent.winRate >= 50} ? 'win' : 'lose'"
-                                  th:text="${agent.winRate} + '%'"></span>
+                        <span th:classappend="${agent.winRate >= 50} ? 'win' : 'lose'"
+                              th:text="${agent.winRate} + '%'"></span>
                     </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(stats.agentStats)}">
-                    <td colspan="3" style="text-align:center; color:var(--text-sub); padding:2rem;">
-                        데이터 없음
-                    </td>
+                    <td colspan="3" style="text-align:center; color:var(--text-sub); padding:2rem;">데이터 없음</td>
                 </tr>
                 </tbody>
             </table>
         </div>
 
-        <!-- 전적 요약 -->
         <div class="card">
             <div class="section-title">Summary</div>
             <table>
@@ -304,17 +332,58 @@
             </table>
         </div>
     </div>
+
+    <div class="card" style="margin-top: 1rem;">
+        <div class="section-title">Recent Matches</div>
+        <table>
+            <thead>
+            <tr>
+                <th>맵</th>
+                <th>에이전트</th>
+                <th>결과</th>
+                <th>KDA</th>
+                <th>라운드</th>
+                <th>날짜</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="match : ${stats.recentMatches}">
+                <td th:text="${match.map}"></td>
+                <td th:text="${match.agent}"></td>
+                <td>
+                    <span th:class="${match.win} ? 'win' : 'lose'"
+                          th:text="${match.win} ? 'WIN' : 'LOSE'"></span>
+                </td>
+                <td th:text="${match.kills} + '/' + ${match.deaths} + '/' + ${match.assists}"></td>
+                <td th:text="${match.roundsPlayed}"></td>
+                <td th:text="${#temporals.format(match.playedAt, 'MM/dd HH:mm')}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(stats.recentMatches)}">
+                <td colspan="6" style="text-align:center; color:var(--text-sub); padding:2rem;">데이터 없음</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 동기화 오버레이 -->
+<div class="sync-overlay" id="syncOverlay">
+    <div class="sync-box">
+        <div class="sync-title">동기화 중<span class="sync-dots"></span></div>
+        <div class="sync-sub">잠시만 기다려주세요</div>
+    </div>
 </div>
 
 <div id="toast"></div>
 
 <script>
     async function syncMatches(name, tag) {
-        showToast('동기화 중...');
+        document.getElementById('syncOverlay').classList.add('active');
         try {
             const res = await fetch(`/api/stats/sync/${name}/${tag}`, {
                 method: 'POST'
             });
+            document.getElementById('syncOverlay').classList.remove('active');
             if (res.ok) {
                 const msg = await res.text();
                 showToast(msg);
@@ -323,6 +392,7 @@
                 showToast('동기화 실패');
             }
         } catch (e) {
+            document.getElementById('syncOverlay').classList.remove('active');
             showToast('서버 오류가 발생했습니다.');
         }
     }

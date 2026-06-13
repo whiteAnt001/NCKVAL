@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>NCK - 매치 상세</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .match-header {
+            position: relative;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            height: 200px;
+        }
+
+        .match-header-bg {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.3);
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .match-header-content {
+            position: relative;
+            z-index: 1;
+            padding: 2rem;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .match-map-name {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .match-meta {
+            text-align: right;
+        }
+
+        .match-meta .winning {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .match-meta .date {
+            color: var(--text-sub);
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        .match-meta .rounds {
+            color: var(--text-sub);
+            font-size: 0.85rem;
+        }
+
+        /* 라운드 타임라인 */
+        .rounds-section {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .rounds-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 1rem;
+        }
+
+        .round-pill {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .round-pill.red {
+            background-color: rgba(255, 70, 85, 0.3);
+            border: 1px solid var(--red);
+            color: var(--red);
+        }
+
+        .round-pill.blue {
+            background-color: rgba(70, 130, 255, 0.3);
+            border: 1px solid #4682ff;
+            color: #4682ff;
+        }
+
+        .round-pill:hover::after {
+            content: attr(data-condition);
+            position: absolute;
+            bottom: 36px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--darker);
+            border: 1px solid var(--border);
+            padding: 0.3rem 0.6rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            white-space: nowrap;
+            z-index: 10;
+            color: var(--text);
+        }
+
+        .round-legend {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 0.8rem;
+            font-size: 0.8rem;
+            color: var(--text-sub);
+        }
+
+        .round-legend span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        /* 팀 스코어 */
+        .score-banner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .score-team {
+            text-align: center;
+        }
+
+        .score-team .team-name {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .score-team .team-score {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .score-team.red .team-name { color: var(--red); }
+        .score-team.red .team-score { color: var(--red); }
+        .score-team.blue .team-name { color: #4682ff; }
+        .score-team.blue .team-score { color: #4682ff; }
+
+        .score-vs {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.2rem;
+            color: var(--text-sub);
+        }
+
+        /* 플레이어 테이블 */
+        .teams-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .team-card {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .team-header {
+            padding: 0.8rem 1.2rem;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .team-header.red {
+            background-color: rgba(255, 70, 85, 0.15);
+            border-bottom: 2px solid var(--red);
+            color: var(--red);
+        }
+
+        .team-header.blue {
+            background-color: rgba(70, 130, 255, 0.15);
+            border-bottom: 2px solid #4682ff;
+            color: #4682ff;
+        }
+
+        .team-table th {
+            font-size: 0.7rem;
+            padding: 0.5rem 0.8rem;
+        }
+
+        .team-table td {
+            padding: 0.6rem 0.8rem;
+            font-size: 0.85rem;
+        }
+
+        .player-name {
+            font-weight: 600;
+        }
+
+        .player-name.registered {
+            color: var(--red);
+        }
+
+        .agent-name {
+            color: var(--text-sub);
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .teams-grid { grid-template-columns: 1fr; }
+            .match-map-name { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a class="nav-logo" href="/">VAL CUSTOM</a>
+    <div class="nav-links">
+        <a href="/">플레이어</a>
+        <a href="/history">매치 기록</a>
+        <a href="/balance">팀 밸런싱</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <!-- 매치 헤더 (맵 이미지) -->
+    <div class="match-header">
+        <img class="match-header-bg"
+             th:src="${match.mapImageUrl}"
+             onerror="this.style.display='none'"
+             alt="map">
+        <div class="match-header-content">
+            <div>
+                <div class="match-map-name" th:text="${match.map}"></div>
+                <div style="color:var(--text-sub); font-size:0.9rem; margin-top:4px;"
+                     th:text="${match.roundsPlayed} + ' 라운드'"></div>
+            </div>
+            <div class="match-meta">
+                <div class="winning"
+                     th:style="${match.winningTeam == 'Red'} ? 'color:#ff4655' : 'color:#4682ff'"
+                     th:text="${match.winningTeam} + ' 승리'"></div>
+                <div class="date"
+                     th:text="${#temporals.format(match.playedAt, 'yyyy.MM.dd HH:mm')}"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 팀 스코어 -->
+    <div class="score-banner">
+        <div class="score-team red">
+            <div class="team-name">🔴 Team Red</div>
+            <div class="team-score"
+                 th:text="${#lists.size(match.rounds.?[winningTeam == 'Red'])}"></div>
+        </div>
+        <div class="score-vs">VS</div>
+        <div class="score-team blue">
+            <div class="team-name">🔵 Team Blue</div>
+            <div class="team-score"
+                 th:text="${#lists.size(match.rounds.?[winningTeam == 'Blue'])}"></div>
+        </div>
+    </div>
+
+    <!-- 라운드 타임라인 -->
+    <div class="rounds-section">
+        <div class="section-title">Rounds</div>
+        <div class="rounds-grid">
+            <div th:each="round : ${match.rounds}"
+                 th:class="${round.winningTeam == 'Red'} ? 'round-pill red' : 'round-pill blue'"
+                 th:text="${round.roundNumber}"
+                 th:attr="data-condition=${round.winCondition}"
+                 th:title="${round.winCondition}">
+            </div>
+        </div>
+        <div class="round-legend">
+            <span>
+                <span class="legend-dot" style="background-color: rgba(255,70,85,0.5); border: 1px solid #ff4655;"></span>
+                Red 승
+            </span>
+            <span>
+                <span class="legend-dot" style="background-color: rgba(70,130,255,0.5); border: 1px solid #4682ff;"></span>
+                Blue 승
+            </span>
+        </div>
+    </div>
+
+    <!-- 팀별 플레이어 -->
+    <div class="teams-grid">
+        <!-- Red Team -->
+        <div class="team-card">
+            <div class="team-header red">🔴 Team Red</div>
+            <table class="team-table" style="width:100%;">
+                <thead>
+                <tr>
+                    <th>플레이어</th>
+                    <th>KDA</th>
+                    <th>점수</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${match.redTeam}">
+                    <td>
+                        <div th:class="${p.registered} ? 'player-name registered' : 'player-name'"
+                             th:text="${p.displayName}"></div>
+                        <div class="agent-name" th:text="${p.agent}"></div>
+                    </td>
+                    <td th:text="${p.kills} + '/' + ${p.deaths} + '/' + ${p.assists}"></td>
+                    <td th:text="${p.score}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Blue Team -->
+        <div class="team-card">
+            <div class="team-header blue">🔵 Team Blue</div>
+            <table class="team-table" style="width:100%;">
+                <thead>
+                <tr>
+                    <th>플레이어</th>
+                    <th>KDA</th>
+                    <th>점수</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${match.blueTeam}">
+                    <td>
+                        <div th:class="${p.registered} ? 'player-name registered' : 'player-name'"
+                             th:text="${p.displayName}"></div>
+                        <div class="agent-name" th:text="${p.agent}"></div>
+                    </td>
+                    <td th:text="${p.kills} + '/' + ${p.deaths} + '/' + ${p.assists}"></td>
+                    <td th:text="${p.score}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div style="margin-top:1rem;">
+        <a class="btn btn-secondary" href="/history">← 매치 기록</a>
+    </div>
+</div>
+
+</body>
+</html>
