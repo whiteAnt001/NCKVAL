@@ -248,8 +248,8 @@
             </div>
         </div>
         <div class="stat-card">
-            <div class="label">KDA</div>
-            <div class="value" th:text="${stats.kda}"></div>
+            <div class="label">KD</div>
+            <div class="value" th:text="${stats.kd}"></div>
             <div class="sub"
                  th:text="${stats.totalKills} + ' / ' + ${stats.totalDeaths} + ' / ' + ${stats.totalAssists}">
             </div>
@@ -312,8 +312,8 @@
                     <td th:text="${stats.totalAssists}"></td>
                 </tr>
                 <tr>
-                    <td style="color:var(--text-sub);">KDA</td>
-                    <td th:text="${stats.kda}"></td>
+                    <td style="color:var(--text-sub);">KD</td>
+                    <td th:text="${stats.kd}"></td>
                 </tr>
                 <tr>
                     <td style="color:var(--text-sub);">승</td>

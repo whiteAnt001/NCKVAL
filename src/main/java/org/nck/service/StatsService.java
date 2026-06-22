@@ -24,7 +24,6 @@ public class StatsService {
     private final MatchRoundRepository matchRoundRepository;
     private final MatchParticipantRepository matchParticipantRepository;
 
-    // 플레이어 승률 및 전적 조회
     public StatsResponseDto getStats(String name, String tag) {
         Player player = playerRepository.findByNameAndTag(name, tag)
                 .orElseThrow(() -> new IllegalArgumentException("등록되지 않은 플레이어 입니다."));
@@ -39,7 +38,9 @@ public class StatsService {
         int totalKills = matchPlayers.stream().mapToInt(MatchPlayer::getKills).sum();
         int totalDeaths = matchPlayers.stream().mapToInt(MatchPlayer::getDeaths).sum();
         int totalAssists = matchPlayers.stream().mapToInt(MatchPlayer::getAssists).sum();
-        double kda = totalDeaths == 0 ? totalKills + totalAssists : (double) (totalKills + totalAssists) / totalDeaths;
+
+        // KDA → KD로 변경
+        double kd = totalDeaths == 0 ? totalKills : (double) totalKills / totalDeaths;
 
         Map<String, Long> agentPickCount = matchPlayers.stream()
                 .collect(Collectors.groupingBy(MatchPlayer::getAgent, Collectors.counting()));
@@ -64,7 +65,6 @@ public class StatsService {
                 .sorted(Comparator.comparingInt(AgentStatsDto::getPicks).reversed())
                 .collect(Collectors.toList());
 
-        // 최근 매치 기록 추가
         List<MatchHistoryDto> recentMatches = matchPlayers.stream()
                 .sorted(Comparator.comparing(mp -> mp.getMatch().getPlayedAt(),
                         Comparator.nullsLast(Comparator.reverseOrder())))
@@ -103,13 +103,12 @@ public class StatsService {
                 .totalKills(totalKills)
                 .totalDeaths(totalDeaths)
                 .totalAssists(totalAssists)
-                .kda(Math.round(kda * 100) / 100.0)
+                .kd(Math.round(kd * 100) / 100.0)
                 .agentStats(agentStats)
-                .recentMatches(recentMatches) // 추가
+                .recentMatches(recentMatches)
                 .build();
     }
 
-    // 등록된 플레이어 3명 이상 참여한 매치만
     public List<MatchHistoryDto> getMatchHistory() {
         return matchRepository.findAll().stream()
                 .map(match -> {
@@ -128,7 +127,8 @@ public class StatsService {
                             .build();
                 })
                 .filter(Objects::nonNull)
-                .sorted(Comparator.comparing(MatchHistoryDto::getPlayedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+                .sorted(Comparator.comparing(MatchHistoryDto::getPlayedAt,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
                 .collect(Collectors.toList());
     }
 
@@ -136,7 +136,6 @@ public class StatsService {
         Match match = matchRepository.findByMatchId(matchId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 매치입니다."));
 
-        // 라운드 조회
         List<MatchDetailDto.RoundDto> rounds = matchRoundRepository
                 .findByMatchOrderByRoundNumberAsc(match)
                 .stream()
@@ -147,7 +146,6 @@ public class StatsService {
                         .build())
                 .collect(Collectors.toList());
 
-        // 전체 참여자 조회
         List<MatchPlayer> registeredPlayers = matchPlayerRepository.findByMatch(match);
         Set<String> registeredPuuids = registeredPlayers.stream()
                 .map(mp -> mp.getPlayer().getPuuid())
@@ -177,7 +175,6 @@ public class StatsService {
                 .filter(p -> "Blue".equalsIgnoreCase(p.getTeam()))
                 .collect(Collectors.toList());
 
-        // 맵 이미지 URL (valorant-api.com)
         String mapImageUrl = "https://media.valorant-api.com/maps/"
                 + getMapUuid(match.getMap()) + "/splash.png";
 
@@ -194,7 +191,6 @@ public class StatsService {
                 .build();
     }
 
-    // 맵 이름 → UUID 변환
     private String getMapUuid(String mapName) {
         return switch (mapName) {
             case "Ascent" -> "7eaecc1b-4337-bbf6-6ab9-04b8f06b3319";
@@ -211,5 +207,4 @@ public class StatsService {
             default -> "";
         };
     }
-
 }

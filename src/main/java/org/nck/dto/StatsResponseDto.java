@@ -21,10 +21,8 @@ public class StatsResponseDto {
     private int totalKills;
     private int totalDeaths;
     private int totalAssists;
-    private double kda;
+    private double kd;
 
     private List<AgentStatsDto> agentStats;
-
     private List<MatchHistoryDto> recentMatches;
-
 }
