@@ -324,7 +324,7 @@
                     <td class="lose" th:text="${stats.losses}"></td>
                 </tr>
                 <tr>
-                    <td style="color:var(--text-sub);">승률</td>
+                    <td style="color:var(--text-sub);">승률.</td>
                     <td th:classappend="${stats.winRate >= 50} ? 'win' : 'lose'"
                         th:text="${stats.winRate} + '%'"></td>
                 </tr>
